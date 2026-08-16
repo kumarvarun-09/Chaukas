@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: chaukas
+
+# Profile
+  profiles:
+    active: dev
