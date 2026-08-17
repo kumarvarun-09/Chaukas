@@ -1,4 +1,4 @@
-package com.chaukas.chaukas;
+package com.chaukas;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

@@ -1,4 +1,4 @@
-package com.chaukas.chaukas;
+package com.chaukas;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
