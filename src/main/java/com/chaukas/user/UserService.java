@@ -1,5 +1,6 @@
 package com.chaukas.user;
 
+import com.chaukas.exception.UserAlreadyExistsException;
 import com.chaukas.user.dto.CreateUserRequest;
 import com.chaukas.user.dto.UserResponse;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +15,7 @@ public class UserService {
     @Transactional
     public UserResponse createUser(CreateUserRequest request) {
         if (userRepository.findByEmail(request.email()).isPresent()) {
-            throw new IllegalArgumentException("Email already registered!");
+            throw new UserAlreadyExistsException(request.email());
         }
 
         User user = new User(request.name(), request.email(), request.phone());
