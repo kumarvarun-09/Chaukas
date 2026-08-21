@@ -8,7 +8,7 @@ import lombok.Setter;
 import java.time.Instant;
 
 @Entity
-@Table(name = "monitor_version")
+@Table(name = "monitor_config")
 @Getter
 @Setter
 public class MonitorConfig {
@@ -17,7 +17,7 @@ public class MonitorConfig {
     @Setter(AccessLevel.NONE)
     private Long id;
     @ManyToOne
-    @JoinColumn(name = "monitor_id")
+    @JoinColumn(name = "monitor_id", nullable = false)
     private Monitor monitor;
     private Integer version;
     private String name;

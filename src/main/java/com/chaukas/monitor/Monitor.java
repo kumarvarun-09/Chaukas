@@ -19,9 +19,9 @@ public class Monitor {
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
-    @ManyToOne
-    @JoinColumn(name = "monitor_config_id")
-    private MonitorConfig monitorConfig;
+    @OneToOne
+    @JoinColumn(name = "current_config_id", unique = true)
+    private MonitorConfig currentConfig;
     @Enumerated(EnumType.STRING)
     private MonitorStatus status;
     private Integer consecutiveFailures;
