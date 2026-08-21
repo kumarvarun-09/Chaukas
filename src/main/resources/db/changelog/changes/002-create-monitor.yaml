@@ -1,0 +1,77 @@
+databaseChangeLog:
+  - changeSet:
+      id: 002
+      author: chaukas
+      changes:
+        - createTable:
+            tableName: monitor
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+
+              - column:
+                  name: user_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: current_config_id
+                  type: BIGINT
+
+              - column:
+                  name: status
+                  type: VARCHAR(16)
+                  defaultValue: "NEW"
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: consecutive_failures
+                  type: INTEGER
+                  defaultValue: "0"
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: enabled
+                  type: BOOLEAN
+                  defaultValue: "true"
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: created_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  defaultValueDate: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: last_updated_at
+                  type: TIMESTAMP WITH TIME ZONE
+
+              - column:
+                  name: next_check_at
+                  type: TIMESTAMP WITH TIME ZONE
+
+        - addForeignKeyConstraint:
+            baseTableName: monitor
+            baseColumnNames: user_id
+            referencedTableName: users
+            referencedColumnNames: id
+            constraintName: fk_monitor_user
+
+#        - addCheckConstraint:
+#            tableName: monitor
+#            constraintName: chk_monitor_consecutive_failures_non_negative
+#            constraintBody: "consecutive_failures >= 0"
+
+        - sql:
+            sql: "ALTER TABLE monitor ADD CONSTRAINT chk_monitor_consecutive_failures_non_negative 
+            CHECK (consecutive_failures >= 0);"

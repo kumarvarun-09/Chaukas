@@ -1,0 +1,132 @@
+databaseChangeLog:
+  - changeSet:
+      id: 003
+      author: chaukas
+      changes:
+        - createTable:
+            tableName: monitor_config
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+
+              - column:
+                  name: monitor_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: version
+                  type: INTEGER
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: url
+                  type: TEXT
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: expected_status_code
+                  type: INTEGER
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: timeout_in_millis
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: failure_threshold
+                  type: INTEGER
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: reminder_after_failures
+                  type: INTEGER
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: created_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: ended_at
+                  type: TIMESTAMP WITH TIME ZONE
+
+        - addForeignKeyConstraint:
+            baseTableName: monitor_config
+            baseColumnNames: monitor_id
+            referencedTableName: monitor
+            referencedColumnNames: id
+            constraintName: fk_monitor_config_monitor
+
+        - addUniqueConstraint:
+            tableName: monitor_config
+            columnNames: monitor_id, version
+            constraintName: uk_monitor_config_monitor_version
+
+#        - addCheckConstraint:
+#            tableName: monitor_config
+#            constraintName: chk_version_valid
+#            constraintBody: "version >= 1"
+
+        - sql:
+            sql: "ALTER TABLE monitor_config ADD CONSTRAINT chk_version_valid 
+            CHECK (version >= 1);"
+
+#        - addCheckConstraint:
+#            tableName: monitor_config
+#            constraintName: chk_expected_status_code
+#            constraintBody: "expected_status_code >= 100 AND expected_status_code <= 599"
+
+        - sql:
+            sql: "ALTER TABLE monitor_config ADD CONSTRAINT chk_expected_status_code 
+            CHECK (expected_status_code >= 100 AND expected_status_code <= 599);"
+
+#        - addCheckConstraint:
+#            tableName: monitor_config
+#            constraintName: chk_timeout_in_millis_positive
+#            constraintBody: "timeout_in_millis >= 1"
+
+        - sql:
+            sql: "ALTER TABLE monitor_config ADD CONSTRAINT chk_timeout_in_millis_positive 
+            CHECK (timeout_in_millis >= 1);"
+
+
+#        - addCheckConstraint:
+#            tableName: monitor_config
+#            constraintName: chk_failure_threshold_positive
+#            constraintBody: "failure_threshold >= 1"
+
+        - sql:
+            sql: "ALTER TABLE monitor_config ADD CONSTRAINT chk_failure_threshold_positive 
+            CHECK (failure_threshold >= 1);"
+
+
+#        - addCheckConstraint:
+#            tableName: monitor_config
+#            constraintName: chk_reminder_after_failures_positive
+#            constraintBody: "reminder_after_failures >= 1"
+
+        - sql:
+            sql: "ALTER TABLE monitor_config ADD CONSTRAINT chk_reminder_after_failures_positive 
+            CHECK (reminder_after_failures >= 1);"
