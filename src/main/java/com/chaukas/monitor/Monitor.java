@@ -3,6 +3,7 @@ package com.chaukas.monitor;
 import com.chaukas.user.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
@@ -11,6 +12,8 @@ import java.time.Instant;
 @Entity
 @Table(name = "monitor")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Getter
+@Setter
 public class Monitor {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
