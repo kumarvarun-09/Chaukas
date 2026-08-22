@@ -18,6 +18,9 @@ public record CreateMonitorRequest(
         @Positive
         Long timeoutInMillis,
         @NotNull
+        @Min(60)
+        Long checkIntervalInSeconds,
+        @NotNull
         @Min(1)
         Integer failureThreshold,
         @NotNull

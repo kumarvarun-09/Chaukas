@@ -24,21 +24,23 @@ public class MonitorConfig {
     private String url;
     private Integer expectedStatusCode;
     private Long timeoutInMillis;
+    private Long checkIntervalInMillis;
     private Integer failureThreshold;
     private Integer reminderAfterFailures;
     private Instant createdAt;
     private Instant endedAt;
 
     public MonitorConfig(Monitor monitor, Integer version, String name, String url,
-                          Integer expectedStatusCode, Long timeoutInMillis,
-                          Integer failureThreshold, Integer reminderAfterFailures,
-                          Instant createdAt) {
+                         Integer expectedStatusCode, Long timeoutInMillis,
+                         Long checkIntervalInMillis, Integer failureThreshold,
+                         Integer reminderAfterFailures, Instant createdAt) {
         this.monitor = monitor;
         this.version = version;
         this.name = name;
         this.url = url;
         this.expectedStatusCode = expectedStatusCode;
         this.timeoutInMillis = timeoutInMillis;
+        this.checkIntervalInMillis = checkIntervalInMillis;
         this.failureThreshold = failureThreshold;
         this.reminderAfterFailures = reminderAfterFailures;
         this.createdAt = createdAt;

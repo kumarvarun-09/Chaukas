@@ -1,0 +1,16 @@
+databaseChangeLog:
+  - changeSet:
+      id: 005
+      author: chaukas
+      changes:
+        - sql:
+            sql: "ALTER TABLE monitor_config 
+            ADD COLUMN check_interval_in_millis BIGINT
+            NOT NULL 
+            CONSTRAINT chk_check_interval_in_millis_minimum 
+            CHECK (check_interval_in_millis >= 60000);"
+
+        - sql:
+            sql: "ALTER TABLE monitor_config
+            ADD CONSTRAINT chk_timeout_less_than_check_interval
+            CHECK (timeout_in_millis < check_interval_in_millis);"
