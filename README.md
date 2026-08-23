@@ -1,71 +1,423 @@
 # Chaukas
 
-Chaukas is an uptime and HTTP monitoring service built with Java and Spring Boot.
+**Chaukas** is a backend monitoring platform for developers and teams who want to continuously monitor the availability of their applications and APIs.
 
-The project is being developed from scratch with a focus on learning and applying
-production-oriented backend engineering practices.
+A user registers a monitor by providing a health-check URL and monitoring configuration. Chaukas periodically checks the endpoint, evaluates the response, tracks failures and incidents, and is designed to notify the owner when a service remains unavailable.
 
-## Tech Stack
+The project is being built with a strong focus on **real-world backend engineering**, including data modeling, transactional consistency, security, scheduling, failure handling, persistence, observability, and scalable system design.
 
-- Java 21
-- Spring Boot
-- Spring Data JPA
-- PostgreSQL
-- Liquibase
-- Maven
+---
 
-## Current Features
+## Why Chaukas?
 
-- User database schema
-- Database migrations with Liquibase
-- Development and production configuration profiles
-- PostgreSQL integration
+When an application goes down, discovering the problem quickly matters.
 
-## Planned Features
+Chaukas aims to provide a simple monitoring workflow:
 
-- HTTP/HTTPS monitor management
-- Monitor versioning
-- Scheduled health checks
-- Response time and status tracking
-- Incident detection and tracking
-- Configurable alert policies
-- Email notifications
-- Concurrent monitoring
-- Redis-based components where required
-- Monitoring analytics
+```text
+User
+ │
+ │ Create monitor
+ ▼
+Chaukas
+ │
+ │ Periodically check endpoint
+ ▼
+Application / API
+ │
+ ├── Healthy ──────► Record successful check
+ │
+ └── Failing ──────► Track consecutive failures
+                         │
+                         ▼
+                  Failure threshold
+                         │
+                         ▼
+                    Notification
+```
 
-## Architecture
+The system is designed so that a transient failure does not immediately become a downtime incident. Consecutive failures, thresholds, retries, and notification policies are part of the monitoring domain.
 
-The project is being developed incrementally, with the goal of building a
-production-oriented backend rather than a simple CRUD application.
+---
 
-## Development
+## Current Architecture
 
-### Requirements
+At the current stage, Chaukas is being developed as a modular Spring Boot backend.
 
-- Java 21
-- PostgreSQL
-- Maven
+### Core domain
 
-### Running Locally
+```text
+User
+ │
+ ├── UserCredentials
+ │
+ └── Monitor
+       │
+       └── MonitorConfig
+             │
+             ├── URL
+             ├── expected status code
+             ├── timeout
+             ├── check interval
+             ├── failure threshold
+             └── reminder interval
+```
 
-1. Create a PostgreSQL database named `chaukas`.
-2. Configure the required environment variables.
-3. Activate the `dev` Spring profile.
-4. Run the application using Maven or IntelliJ.
+### Monitor and configuration model
 
-Liquibase manages database schema changes and migrations.
+A `Monitor` represents the long-lived monitoring resource.
 
-## Database Migrations
+`MonitorConfig` represents a versioned configuration for that monitor.
 
-Database schema changes are managed using Liquibase.
+This separation allows configuration changes to be tracked without rewriting historical configuration state.
 
-Applied changesets should not be modified. New schema changes should be
-introduced through new changesets.
+The monitor maintains runtime state such as:
+
+* Current status
+* Consecutive failures
+* Enabled/disabled state
+* Current configuration
+* Next scheduled check
+* Creation/update timestamps
+
+Configurations contain monitoring-specific settings such as:
+
+* Monitor name
+* URL
+* Expected HTTP status code
+* Request timeout
+* Check interval
+* Failure threshold
+* Reminder interval
+
+---
+
+## Configuration Versioning
+
+Monitor configuration is intentionally separated from the monitor itself.
+
+A monitor can have multiple configurations over its lifetime:
+
+```text
+Monitor #42
+
+Version 1
+   │
+   ├── created
+   │
+   ▼
+Version 2
+   │
+   ├── configuration changed
+   │
+   ▼
+Version 3
+   │
+   └── current configuration
+```
+
+Each configuration belongs to a monitor and has a version number.
+
+The database enforces uniqueness for:
+
+```text
+(monitor_id, version)
+```
+
+This gives us a foundation for preserving configuration history instead of overwriting previous configurations.
+
+---
+
+## Monitoring Rules
+
+Chaukas currently models several important monitoring constraints.
+
+### Check interval
+
+The minimum check interval is currently:
+
+```text
+60 seconds
+```
+
+### Timeout
+
+A monitor timeout must be shorter than its check interval:
+
+```text
+timeout < checkInterval
+```
+
+This prevents a check from potentially running longer than the interval at which the next check is expected.
+
+### Failure threshold
+
+A notification is not triggered by the first failure.
+
+For example, with:
+
+```text
+failureThreshold = 10
+```
+
+the service must reach the configured failure threshold before the initial notification is sent.
+
+### Reminder notifications
+
+After the initial threshold is reached, reminders are based on the configured reminder interval.
+
+For example:
+
+```text
+failureThreshold       = 10
+reminderAfterFailures  = 7
+```
+
+Notifications occur at:
+
+```text
+10
+17
+24
+31
+38
+45
+...
+```
+
+The reminder interval therefore represents the number of additional consecutive failures after the previous notification.
+
+---
+
+## API Scope
+
+The initial monitoring version intentionally keeps the HTTP check model simple.
+
+### V1
+
+Monitors currently target normal HTTP endpoints using a `GET` request.
+
+The initial configuration does not attempt to support every possible API authentication or HTTP request scenario.
+
+Future versions can introduce support for:
+
+* HTTP methods
+* Request headers
+* Authentication credentials
+* Request bodies
+* Custom health-check conditions
+* More advanced response validation
+
+The goal is to avoid prematurely designing features before their actual requirements are understood.
+
+---
+
+## Data Integrity
+
+Database constraints are treated as part of the application's correctness model rather than relying exclusively on Java validation.
+
+The database currently enforces rules such as:
+
+* Required relationships
+* Unique monitor configuration versions
+* Valid HTTP status-code ranges
+* Positive timeout values
+* Positive failure thresholds
+* Positive reminder intervals
+* Non-negative consecutive failures
+* Minimum check interval
+* Timeout being smaller than check interval
+
+Application-level validation is also used for incoming API requests.
+
+This provides two layers of protection:
+
+```text
+Client
+  ↓
+DTO validation
+  ↓
+Service/domain rules
+  ↓
+Database constraints
+```
+
+---
+
+## Authentication
+
+Authentication is currently being designed around a dedicated credentials model.
+
+Users and authentication credentials are separated:
+
+```text
+users
+  │
+  │ 1 : 1
+  ▼
+user_credentials
+```
+
+The credential table stores the password hash rather than a plaintext password.
+
+The planned authentication architecture uses:
+
+* Spring Security
+* Password hashing
+* JWT access tokens
+* Bearer authentication
+* Stateless API authentication
+
+Authentication and authorization will be introduced before exposing monitor operations as user-owned resources.
+
+---
+
+## Persistence
+
+### Database
+
+PostgreSQL is used as the primary relational database.
+
+### Database migrations
+
+Liquibase manages database schema evolution.
+
+Schema changes are maintained as incremental migrations rather than relying on Hibernate to create production tables.
+
+Example:
+
+```text
+001 - users
+002 - monitor
+003 - monitor_config
+004 - monitor/current-config relationship
+005 - monitoring interval constraints
+006 - user credentials
+...
+```
+
+This gives the project experience with real database migration workflows and schema evolution.
+
+---
+
+## Technology Stack
+
+| Technology        | Purpose                                    |
+| ----------------- | ------------------------------------------ |
+| Java              | Primary programming language               |
+| Spring Boot       | Backend application framework              |
+| Spring Data JPA   | Persistence layer                          |
+| Hibernate         | ORM                                        |
+| Spring Validation | API input validation                       |
+| Spring Security   | Authentication & authorization             |
+| PostgreSQL        | Primary database                           |
+| Liquibase         | Database migrations                        |
+| Redis             | Caching / distributed backend capabilities |
+| Docker            | Containerization                           |
+| GitHub Actions    | CI automation                              |
+| OpenAPI / Swagger | API documentation                          |
+
+---
+
+## Engineering Principles
+
+Chaukas is being developed around several backend engineering principles.
+
+### Separation of concerns
+
+API, service, persistence, domain, security, and configuration responsibilities are kept separate.
+
+### Database as a consistency boundary
+
+Important invariants are enforced at the database level where appropriate.
+
+### Explicit transactions
+
+Operations that modify multiple related entities are treated as atomic business operations.
+
+### Encapsulation
+
+Entities do not expose setters simply for convenience when a state transition should instead be represented by a meaningful domain operation.
+
+### Versioned configuration
+
+Historical configuration should not be unnecessarily overwritten.
+
+### Defense in depth
+
+Validation exists at multiple layers:
+
+```text
+API validation
+      ↓
+Business rules
+      ↓
+Database constraints
+```
+
+### Incremental complexity
+
+Features are introduced when they solve a real requirement instead of adding distributed-system complexity prematurely.
+
+---
+
+## Planned Monitoring Architecture
+
+The monitoring engine will eventually follow a flow similar to:
+
+```text
+Scheduler
+    │
+    ▼
+Find monitors due for checking
+    │
+    ▼
+Dispatch check
+    │
+    ▼
+HTTP request
+    │
+    ├───────────────┐
+    ▼               ▼
+Success           Failure
+    │               │
+    ▼               ▼
+Record result   Update failure state
+                    │
+                    ▼
+              Threshold reached?
+                 │       │
+                No      Yes
+                 │       │
+                 │       ▼
+                 │   Notification
+                 │       │
+                 │       ▼
+                 │   Reminder policy
+                 │
+                 ▼
+             Schedule next check
+```
+
+The exact execution model will evolve as scalability requirements become clearer.
+
+Potential areas include:
+
+* Thread pools
+* Persistent scheduling
+* Queues
+* Retry policies
+* Distributed locking
+* Idempotent processing
+* Failure/incident tracking
+* Notification workers
+
+---
 
 ## Project Status
 
-🚧 **Work in Progress**
+Chaukas is actively being developed.
 
-Chaukas is actively being developed and its architecture and features will
-evolve as the project progresses.
+The project intentionally evolves from a relatively simple Spring Boot application toward a production-oriented monitoring system. Architectural decisions are made incrementally as new requirements are introduced, with emphasis on understanding the underlying engineering trade-offs.
+
+The objective is not only to build a monitoring product, but to explore and implement the engineering practices used in modern backend systems.
