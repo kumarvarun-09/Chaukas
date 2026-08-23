@@ -3,6 +3,7 @@ package com.chaukas.user;
 import com.chaukas.exception.UserAlreadyExistsException;
 import com.chaukas.user.dto.CreateUserRequest;
 import com.chaukas.user.dto.UserResponse;
+import com.chaukas.user.model.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

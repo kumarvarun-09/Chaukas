@@ -1,6 +1,7 @@
-package com.chaukas.monitor;
+package com.chaukas.monitor.model;
 
-import com.chaukas.user.User;
+import com.chaukas.monitor.MonitorStatus;
+import com.chaukas.user.model.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -33,10 +34,19 @@ public class Monitor {
     private Instant lastUpdatedAt;
     private Instant nextCheckAt;
 
-    Monitor(User user, MonitorStatus status, Integer consecutiveFailures, Instant createdAt) {
+    public Monitor(User user, MonitorStatus status, Integer consecutiveFailures) {
         this.user = user;
         this.status = status;
         this.consecutiveFailures = consecutiveFailures;
-        this.createdAt = createdAt;
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = Instant.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.lastUpdatedAt = Instant.now();
     }
 }

@@ -1,4 +1,4 @@
-package com.chaukas.monitor;
+package com.chaukas.monitor.model;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -33,7 +33,7 @@ public class MonitorConfig {
     public MonitorConfig(Monitor monitor, Integer version, String name, String url,
                          Integer expectedStatusCode, Long timeoutInMillis,
                          Long checkIntervalInMillis, Integer failureThreshold,
-                         Integer reminderAfterFailures, Instant createdAt) {
+                         Integer reminderAfterFailures) {
         this.monitor = monitor;
         this.version = version;
         this.name = name;
@@ -43,6 +43,10 @@ public class MonitorConfig {
         this.checkIntervalInMillis = checkIntervalInMillis;
         this.failureThreshold = failureThreshold;
         this.reminderAfterFailures = reminderAfterFailures;
-        this.createdAt = createdAt;
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = Instant.now();
     }
 }
