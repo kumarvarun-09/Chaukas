@@ -12,10 +12,21 @@ import java.time.Instant;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 public class UserCredentials {
+
+//    Below, mentioned private Long userId;
+//    and private User user;
+//    are not two different database columns.
+//    They are two different Java representations of the same database column,
+//    serving two different purposes.
+
     @Id
+    @Column(name = "user_id")
+    private Long userId;
+
     @OneToOne(optional = false)
     @JoinColumn(name = "user_id", nullable = false)
-    @MapsId
+    @MapsId  // @MapsId tells Hibernate:
+//    The ID of UserCredentials comes from the ID of the associated User.
     private User user;
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
