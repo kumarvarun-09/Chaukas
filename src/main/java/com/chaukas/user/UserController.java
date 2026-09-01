@@ -1,7 +1,7 @@
 package com.chaukas.user;
 
-import com.chaukas.user.dto.CreateUserRequest;
-import com.chaukas.user.dto.UserResponse;
+import com.chaukas.auth.dto.CreateUserRequest;
+import com.chaukas.auth.dto.UserResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

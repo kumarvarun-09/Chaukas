@@ -1,4 +1,4 @@
-package com.chaukas.user.dto;
+package com.chaukas.auth.dto;
 
 public record RegisterResponse(
         Long id,
