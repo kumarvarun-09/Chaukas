@@ -1,5 +1,7 @@
 package com.chaukas.auth;
 
+import com.chaukas.auth.dto.LoginRequest;
+import com.chaukas.auth.dto.LoginResponse;
 import com.chaukas.auth.dto.RegisterRequest;
 import com.chaukas.auth.dto.RegisterResponse;
 import jakarta.validation.Valid;
@@ -21,5 +23,11 @@ public class AuthenticationController {
     public ResponseEntity<RegisterResponse> registerUser(@RequestBody @Valid RegisterRequest registerRequest) {
         RegisterResponse registerResponse = authenticationService.registerUser(registerRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(registerResponse);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponse> loginUser(@Valid @RequestBody LoginRequest loginRequest){
+        LoginResponse loginResponse = authenticationService.loginUser(loginRequest);
+        return ResponseEntity.ok(loginResponse);
     }
 }
