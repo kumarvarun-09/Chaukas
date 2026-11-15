@@ -37,6 +37,6 @@ public class JwtKeyConfiguration {
         KeyFactory keyFactory = KeyFactory.getInstance("RSA");
 
         return (RSAPrivateKey) keyFactory
-                .generatePublic(new PKCS8EncodedKeySpec(decodedPrivateKey));
+                .generatePrivate(new PKCS8EncodedKeySpec(decodedPrivateKey));
     }
 }
