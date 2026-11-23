@@ -4,6 +4,7 @@ import com.chaukas.auth.model.ChaukasUserDetails;
 import com.chaukas.user.UserCredentialsRepository;
 import com.chaukas.user.model.UserCredentials;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;

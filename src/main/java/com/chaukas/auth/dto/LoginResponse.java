@@ -1,4 +1,6 @@
 package com.chaukas.auth.dto;
 
-public record LoginResponse() {
+public record LoginResponse(
+        String token
+) {
 }

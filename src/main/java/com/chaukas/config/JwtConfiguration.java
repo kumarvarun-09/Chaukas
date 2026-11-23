@@ -3,6 +3,9 @@ package com.chaukas.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
+import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
@@ -14,7 +17,7 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
 @Configuration
-public class JwtKeyConfiguration {
+public class JwtConfiguration {
 
     @Bean
     public RSAPublicKey rsaPublicKey(@Value("${jwt.public-key}") String encodedPublicKey)
@@ -38,5 +41,12 @@ public class JwtKeyConfiguration {
 
         return (RSAPrivateKey) keyFactory
                 .generatePrivate(new PKCS8EncodedKeySpec(decodedPrivateKey));
+    }
+
+    @Bean
+    public JwtEncoder jwtEncoder(RSAPublicKey publicKey, RSAPrivateKey privateKey) {
+        return NimbusJwtEncoder.withKeyPair(publicKey, privateKey)
+                .algorithm(SignatureAlgorithm.RS256)
+                .build();
     }
 }
