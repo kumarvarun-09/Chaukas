@@ -4,7 +4,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 
 import java.security.KeyFactory;
@@ -47,6 +49,12 @@ public class JwtConfiguration {
     public JwtEncoder jwtEncoder(RSAPublicKey publicKey, RSAPrivateKey privateKey) {
         return NimbusJwtEncoder.withKeyPair(publicKey, privateKey)
                 .algorithm(SignatureAlgorithm.RS256)
+                .build();
+    }
+    @Bean
+    public JwtDecoder jwtDecoder(RSAPublicKey publicKey){
+        return NimbusJwtDecoder.withPublicKey(publicKey)
+                .signatureAlgorithm(SignatureAlgorithm.RS256)
                 .build();
     }
 }
