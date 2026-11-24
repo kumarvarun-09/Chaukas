@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -61,6 +62,18 @@ public class GlobalExceptionHandler {
                                 VALIDATION_FAILED.name(),
                                 Instant.now(),
                                 details
+                        )
+                );
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ErrorResponse> runtimeExceptionHandler(AuthenticationException exception) {
+        log.error(exception.getMessage(), exception);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(exception.getMessage(),
+                                "Authentication Exception",
+                                Instant.now(),
+                                null
                         )
                 );
     }
